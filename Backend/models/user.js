@@ -11,6 +11,14 @@ const userSchema = mongoose.Schema({
         type:Date,
         default:Date.now()
     },
+    questions:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"question"
+    }],
+    answer:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"answer"
+    }]
 })
 
 module.exports = mongoose.model('user',userSchema);
