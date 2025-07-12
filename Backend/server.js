@@ -7,6 +7,12 @@ const path = require('path');
 const userModel = require('./models/user');
 const questionModel = require('./models/question');
 const answerModel = require('./models/answer');
+const cors = require('cors')
+
+app.use(cors({
+    origin: 'http://localhost:3000', // frontend link
+    credentials: true
+}));
 app.use(express.json());
 app.set("view engine","ejs");
 app.use(express.static(path.join(__dirname,"public")));
@@ -33,7 +39,8 @@ app.post('/signup',async(req,res)=>{
             });
             let token = jwt.sign({email:email,userId:user._id},"shshhshs");
             res.cookie("token",token);
-            return res.redirect('/home')
+            // return res.redirect('/home')
+            // return res.redirect('http://localhost:3000/')
 
 
         })
@@ -51,10 +58,14 @@ app.post('/login',isLoggedIn,async(req,res)=>{
          if (err) return res.status(500).send("Error checking password");
         if(result){
             let token = jwt.sign({email:email,userID:user._id},"shshhshs");
-            return res.status(200).cookie("token", token).render("login");
+            res.cookie("token", token, {
+                httpOnly: true,
+                sameSite: 'Lax',  
+            });
+            return res.status(200).send("Login successful");
         }
         else{
-            return res.status(401).send("Please retry!");
+             return res.status(401).send("Incorrect password");
         } 
     })
 })
@@ -94,6 +105,18 @@ app.post('/questions',isLoggedIn, async(req,res)=>{
     }
 })
 
+app.get("/get/question", async(req,res)=>{
+    try {
+        const questions = await questionModel.find().populate('createdBy', 'name email') 
+      .populate('answerBy') 
+      .sort({ createdAt: -1 });
+       res.status(200).json(questions);
+    } catch (err) {
+        console.error("Error:", err);
+    res.status(500).json({ message: "Error fetching questions" });
+    }
+})
+
 // JWT Middleware
 function isLoggedIn(req,res,next){
     if(!req.cookies.token === ""){
@@ -108,5 +131,5 @@ function isLoggedIn(req,res,next){
         return res.send("Invalid Token, Please login again!")
     }
 }
-app.listen(3000);
+app.listen(5000);
 
