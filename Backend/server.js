@@ -84,7 +84,7 @@ app.get("/home",(req,res)=>{
     res.render("home")
 })
 // Create Questions
-app.post('/questions',isLoggedIn, async(req,res)=>{
+app.post('/ques',isLoggedIn, async(req,res)=>{
     try {
         let user = await userModel.findOne({email:req.user.email});
         if(!user) return res.status(404).send("User not found!");
